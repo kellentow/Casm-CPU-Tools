@@ -106,25 +106,25 @@ Casm is designed to provide a simple yet powerful assembly language for custom C
 
 - **`shift_left`**  
   **Opcode**: `0x10`  
-  **Description**: Shifts the value of a register left by a specified number of bits.  
+  **Description**: Shifts the value of a register left by 1 bit.
   **Operands**: pointer, Register.  
   **Example**: `shift_left p100 r1`.
 
 - **`shift_right`**  
   **Opcode**: `0x11`  
-  **Description**: Shifts the value of a register right by a specified number of bits.  
+  **Description**: Shifts the value of a register right 1 bit.  
   **Operands**: pointer, Register.  
   **Example**: `shift_right p100 r1`.
 
 - **`shift_left_reg`**  
   **Opcode**: `0x1A`  
-  **Description**: Shifts the value of a register left by the value in another register.  
+  **Description**: Shifts the value of a register left by 1 bit.  
   **Operands**: Register, Register.  
   **Example**: `shift_left_reg r1 r1`.
 
 - **`shift_right_reg`**  
   **Opcode**: `0x1B`  
-  **Description**: Shifts the value of a register right by the value in another register.  
+  **Description**: Shifts the value of a register right by 1 bit.  
   **Operands**: Register, Register.  
   **Example**: `shift_right_reg r1 r1`.
 
