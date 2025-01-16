@@ -1,0 +1,9 @@
+; Function to perform an action
+def performAction
+    mul r0 r0 r1         ; Multiply r0 by itself and store in r1 (example operation)
+    return               ; Return from the function
+
+; Main program
+read p10 r0              ; Read value from memory address p10 into r0
+run performAction        ; Call the performAction function
+exit                     ; Exit the program
