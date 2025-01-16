@@ -39,6 +39,7 @@ def assembly_to_bin(assembly_code):
 
     funcs = {}
     line_to_path=[]
+    final = []
     
     # Helper function to convert a value into bytes
     def int_to_bytes(value, num_bytes=1):
@@ -53,19 +54,16 @@ def assembly_to_bin(assembly_code):
     # Parse the assembly code and convert each instruction to machine code.
     for i, line in enumerate(assembly_code.splitlines()):
         line = line.strip()
+        line_to_path.append(len(bin_code)-1)
         if not line or line.startswith(";"):  # Ignore comments and empty lines
             continue
-
-        line_to_path.append(len(bin_code)+1)
 
         parts = line.split()
         instruction = parts[0]
         
         # Handle function definitions
         if instruction == 'def' and len(parts) >= 2:
-            print('Warning: Functions are highly experimental and may not work')
-            funcs[parts[1]] = len(bin_code) + 6  # Store the function's location
-            bin_code.extend(bytes([1,16,1,16,1,16]))
+            funcs[parts[1]] = len(bin_code)  # Store the function's location
             continue
         
         # Handle the run instruction (jump to a function)
@@ -90,13 +88,6 @@ def assembly_to_bin(assembly_code):
         opcode = opcode_map[instruction][0]
         operands = parts[1:]
 
-        if instruction == 'return':
-            for n in range(len(bin_code)-5):
-                if bytes(bin_code[n:n+6]) == bytes([1,16,1,16,1,16]):
-                    bin_code[n]=opcode_map['jump'][0]
-                    bin_code[n+1:n+6]=pointer_to_bytes(len(bin_code)+1)
-                    break
-
         # Start by adding the opcode
         instruction_bytes = int_to_bytes(opcode)
 
@@ -108,9 +99,11 @@ def assembly_to_bin(assembly_code):
                 if operand.startswith("r"):
                     instruction_bytes.extend(int_to_bytes(int(operand[1:]), 1))  # Register ID
                 elif operand.startswith("pl"):
-                    instruction_bytes.extend(pointer_to_bytes(int(line_to_path[operand[1:]])))
+                    instruction_bytes.extend(pointer_to_bytes(int(operand[2:])))
+                    final.append([len(instruction_bytes)-5+len(bin_code),int(operand[2:]),"line pointer"])
                 elif operand.startswith("pr"):
-                    instruction_bytes.extend(bytes("poram",'ascii'))
+                    instruction_bytes.extend(pointer_to_bytes(int(operand[2:])))
+                    final.append([len(instruction_bytes)-5+len(bin_code),int(operand[2:]),"ram pointer"])
                 elif operand.startswith("p"):
                     instruction_bytes.extend(pointer_to_bytes(int(operand[1:])))  # Pointer
             else:
@@ -120,9 +113,12 @@ def assembly_to_bin(assembly_code):
         # Add this instruction to the binary code
         bin_code.extend(instruction_bytes)
 
-    for n in range(len(bin_code)-5):
-        if bytes(bin_code[n:n+5]) == bytes("poram",'ascii'):
-            bin_code[n+1:n+5]=pointer_to_bytes(len(bin_code)+1)
+    for byte, info, todo in final:
+        if todo == "ram pointer":
+            bin_code[byte:byte+6]=pointer_to_bytes(len(bin_code)+1+info)
+        elif todo == "line pointer":
+            print(info,line_to_path[info])
+            bin_code[byte:byte+5]=pointer_to_bytes(line_to_path[info])
 
     return bin_code
 

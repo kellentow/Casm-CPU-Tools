@@ -200,14 +200,14 @@ This will take the Casm source code file, convert it to binary, and save it with
 
 ### Example 1: Simple Addition
 
-```asm
+```casm
 add r0 r1 r2
 ```
 This instruction adds the values in `r0` and `r1` and stores the result in `r2`.
 
 ### Example 2: Function Definition and Call
 
-```asm
+```casm
 def my_function
     add r0 r1 r2
     return

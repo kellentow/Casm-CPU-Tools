@@ -22,7 +22,7 @@ def byte_to_reg_ids(byte):
     c = (byte >> 2) & 0b11
     d = byte & 0b11
     return [a,b,c,d]
-def bytes_to_pointer(bytes:bytes):
+def bytes_to_pointer(bytes):
     return int.from_bytes(bytes,'big')
 
 pc = 0
@@ -33,23 +33,23 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
     data = rom[0:2**14+1] + ram
     match data[pc]:
         case 0:   #/x00  |  jump
-            data[data[-256] * -5 + 0 + len(rom)] = pc % 64
-            data[data[-256] * -5 + 1 + len(rom)] = int(pc / 64) % 64
-            data[data[-256] * -5 + 2 + len(rom)] = int(pc / 64**2) % 64
-            data[data[-256] * -5 + 3 + len(rom)] = int(pc / 64**3) % 64
-            data[data[-256] * -5 + 4 + len(rom)] = int(pc / 64**4) % 64
+            data[data[-256] * -5 + 0] = pc % 255
+            data[data[-256] * -5 + 1] = int(pc / 64) % 255
+            data[data[-256] * -5 + 2] = int(pc / 64**2) % 255
+            data[data[-256] * -5 + 3] = int(pc / 64**3) % 255
+            data[data[-256] * -5 + 4] = int(pc / 64**4) % 255
             data[-256] = (data[-256] + 1) % 64
             pc = bytes_to_pointer(data[pc + 1:pc + 6])
             print(f"Jumping to: {pc}")
         case 1:   #/x01  |  return
-            pc = pc = bytes_to_pointer(ram[ram[-256]*-4:ram[-256]*-4+4])
+            data[-256] = (data[-256]-1) %64
+            pc = bytes_to_pointer(reversed(data[data[-256] * -5:data[-256] * -5 + 4]))
             print(f"Returning to: {pc}")
-            ram[ram[-256]*-5+0] = 0
-            ram[ram[-256]*-5+1] = 0
-            ram[ram[-256]*-5+2] = 0
-            ram[ram[-256]*-5+3] = 0
-            ram[ram[-256]*-5+4] = 0
-            ram[-256] = (ram[-256]-1) %64
+            data[data[-256] * -5 + 0] = 0
+            data[data[-256] * -5 + 1] = 0
+            data[data[-256] * -5 + 2] = 0
+            data[data[-256] * -5 + 3] = 0
+            data[data[-256] * -5 + 4] = 0
         case 2:   #/x02  |  exit
             print("exiting")
             exit()
@@ -173,6 +173,8 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
             pc+=1
         case _: #err, unimplimented
             print(f"Unknown command: {data[pc]} at {pc}")
+    ram = data[-(2**12):]
+    rom = data[:-(2**12+1)]
     time.sleep(0.1)
 
 # todo: Fully implimented!!!
