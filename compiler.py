@@ -15,19 +15,19 @@ def assembly_to_bin(assembly_code):
         "jump":             [0x00,'p'],
         "return":           [0x01],
         "exit":             [0x02],
-        "read":             [0x03,'p','r'],
-        "write":            [0x04,'p','r'],
-        "compare":          [0x05,'p','p'],
+        "read":             [0x03,'r','p,c'],
+        "write":            [0x04,'r,c','p'],
+        "compare":          [0x05,'r','p,c'],
         "is_zero":          [0x06,'p'],
-        "reg_equals":       [0x07,'r','r'],
+        "reg_equals":       [0x07,'r','r,c'],
         "reg_zero":         [0x08,'r'],
         "nop":              [0x09],
         "shift_left":       [0x10,'p','r'],
         "shift_right":      [0x11,'p','r'],
-        "add":              [0x12,'p','p','r'],
-        "sub":              [0x13,'p','p','r'],
-        "mul":              [0x14,'p','p','r'],
-        "div":              [0x15,'p','p','r'],
+        "add":              [0x12,'r','p','p,c'],
+        "sub":              [0x13,'r','p','p,c'],
+        "mul":              [0x14,'r','p','p,c'],
+        "div":              [0x15,'r','p','p,c'],
         "add1":             [0x16],
         "shift_left_reg":   [0x1A,'r','r'],
         "shift_right_reg":  [0x1B,'r','r'],
@@ -95,7 +95,7 @@ def assembly_to_bin(assembly_code):
         for i, operand in enumerate(operands):
             if operand.startswith(';'):
                 break 
-            elif operand.startswith(opcode_map[instruction][i+1]):
+            elif any(element in operand for element in opcode_map[instruction][i+1].split(',')):
                 if operand.startswith("r"):
                     instruction_bytes.extend(int_to_bytes(int(operand[1:]), 1))  # Register ID
                 elif operand.startswith("pl"):
@@ -106,6 +106,8 @@ def assembly_to_bin(assembly_code):
                     final.append([len(instruction_bytes)-5+len(bin_code),int(operand[2:]),"ram pointer"])
                 elif operand.startswith("p"):
                     instruction_bytes.extend(pointer_to_bytes(int(operand[1:])))  # Pointer
+                elif operand.startswith("c"):
+                    instruction_bytes.extend(int_to_bytes(int(operand[1:])))
             else:
                 print(f"Unrecognized operand: {operand}")
                 exit(2)
