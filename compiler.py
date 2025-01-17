@@ -51,6 +51,7 @@ def assembly_to_bin(assembly_code):
     
     bin_code = []
 
+    print("Reading code")
     # Parse the assembly code and convert each instruction to machine code.
     for i, line in enumerate(assembly_code.splitlines()):
         line = line.strip()
@@ -115,12 +116,42 @@ def assembly_to_bin(assembly_code):
         # Add this instruction to the binary code
         bin_code.extend(instruction_bytes)
 
-    for byte, info, todo in final:
-        if todo == "ram pointer":
-            bin_code[byte:byte+6]=pointer_to_bytes(len(bin_code)+1+info)
-        elif todo == "line pointer":
-            print(info,line_to_path[info])
-            bin_code[byte:byte+5]=pointer_to_bytes(line_to_path[info])
+    print("Doing last look over")
+
+    try:
+        for byte, info, todo in final:
+            if todo == "ram pointer":
+                try:
+                    bin_code[byte:byte+6]=pointer_to_bytes(len(bin_code)+1+info)
+                except Exception as e:
+                    try:
+                        print(f"Failed to create Ram pointer, near line {line_to_path.index(byte)}")
+                        exit(7)
+                    except ValueError:
+                        print(f"Failed to create Ram pointer, Could not get line number")
+                        exit(8)
+            elif todo == "line pointer":
+                print(info,line_to_path[info])
+                try:
+                    bin_code[byte:byte+5]=pointer_to_bytes(line_to_path[info])
+                except KeyError():
+                    print(f'Could not find line {info}')
+                    exit(6)
+    except Exception as e:
+        import datetime
+        filename = "error-"+str(datetime.date.today)
+        print("An error occured please send file {filename} to https://github.com/kellentow/Casm-CPU-Tools/issues")
+        try:
+            with open(filename,'w') as f:
+                f.write(str(e))
+            exit(5)
+        except Exception as r:
+            print("another error occured while making error log, printing both errors")
+            print(e)
+            print(r)
+            exit(9)
+
+    print("Binary Generated")
 
     return bin_code
 
@@ -128,6 +159,12 @@ def save_bin_to_file(bin_code, filename):
     with open(filename, "wb") as f:
         f.write(bytes(bin_code))
     print(f"Binary code saved to {filename}")
+
+try:
+    open(sys.argv[1], 'r').close()
+except Exception as e:
+    print("Failed to read file, file may not exist or you don't have permission to read it")
+    exit(10)
 
 # Convert the assembly code to binary and save to file
 bin_code = assembly_to_bin(open(sys.argv[1], 'r').read())
