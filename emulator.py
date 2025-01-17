@@ -1,14 +1,8 @@
 import time
 import sys
+from Utils import set_proc_name, Pointer
 
-def set_proc_name(newname):
-    from ctypes import cdll, byref, create_string_buffer
-    libc = cdll.LoadLibrary('libc.so.6')
-    buff = create_string_buffer(len(newname)+1)
-    buff.value = bytes(newname, "UTF-8")
-    libc.prctl(15, byref(buff), 0, 0, 0)
-
-set_proc_name('Casm Emulator')
+set_proc_name("Casm Emulator")
 
 rom = list(open(sys.argv[1],mode = "rb").read())
 for i, byte in enumerate(rom):
@@ -25,12 +19,12 @@ def byte_to_reg_ids(byte):
 def bytes_to_pointer(bytes):
     return int.from_bytes(bytes,'big')
 
-pc = 0
+pc = Pointer(0)
 input_mode = 0 #pointers become constants, 0=pointers, 1=constants
 while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
-    #print("\033[2J",end='')
-    #print("\033[0;0f",end='')
-    print(pc)
+    print("\033[2J",end='')
+    print("\033[0;0f",end='')
+    
     data = rom[0:2**14+1] + ram
     match data[pc]:
         case 0:   #/x00  |  jump

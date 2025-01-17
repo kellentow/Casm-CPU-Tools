@@ -1,11 +1,5 @@
 import sys
-
-def set_proc_name(newname):
-    from ctypes import cdll, byref, create_string_buffer
-    libc = cdll.LoadLibrary('libc.so.6')
-    buff = create_string_buffer(len(newname)+1)
-    buff.value = bytes(newname, "UTF-8")
-    libc.prctl(15, byref(buff), 0, 0, 0)
+from Utils import set_proc_name, Pointer
 
 set_proc_name('Casm Compiler')
 
@@ -45,10 +39,6 @@ def assembly_to_bin(assembly_code):
     def int_to_bytes(value, num_bytes=1):
         return [(value >> (8 * i)) & 0xFF for i in range(num_bytes)]
     
-    # Helper function to convert a pointer to bytes
-    def pointer_to_bytes(pointer:int, num_bytes=5):
-        return pointer.to_bytes(5,'big')
-    
     bin_code = []
 
     print("Reading code")
@@ -72,7 +62,7 @@ def assembly_to_bin(assembly_code):
             if len(parts) >= 2:
                 if parts[1] in funcs:
                     bin_code.extend(int_to_bytes(opcode_map['jump'][0]))
-                    bin_code.extend(pointer_to_bytes(funcs[parts[1]]))  # Jump to function
+                    bin_code.extend(Pointer(funcs[parts[1]]))  # Jump to function
                     continue
                 else:
                     print(f"Function {parts[1]} undefined.")
@@ -100,15 +90,15 @@ def assembly_to_bin(assembly_code):
                 if operand.startswith("r"):
                     instruction_bytes.extend(int_to_bytes(int(operand[1:]), 1))  # Register ID
                 elif operand.startswith("pl"):
-                    instruction_bytes.extend(pointer_to_bytes(int(operand[2:])))
+                    instruction_bytes.extend(Pointer(int(operand[2:])))
                     final.append([len(instruction_bytes)-5+len(bin_code),int(operand[2:]),"line pointer"])
                 elif operand.startswith("pr"):
-                    instruction_bytes.extend(pointer_to_bytes(int(operand[2:])))
+                    instruction_bytes.extend(Pointer(int(operand[2:])))
                     final.append([len(instruction_bytes)-5+len(bin_code),int(operand[2:]),"ram pointer"])
                 elif operand.startswith("p"):
-                    instruction_bytes.extend(pointer_to_bytes(int(operand[1:])))  # Pointer
+                    instruction_bytes.extend(Pointer(int(operand[1:])))  # Pointer
                 elif operand.startswith("c"):
-                    instruction_bytes.extend(int_to_bytes(int(operand[1:])))
+                    instruction_bytes.extend(Pointer(int(operand[1:])))
             else:
                 print(f"Unrecognized operand: {operand}")
                 exit(2)
@@ -122,7 +112,7 @@ def assembly_to_bin(assembly_code):
         for byte, info, todo in final:
             if todo == "ram pointer":
                 try:
-                    bin_code[byte:byte+6]=pointer_to_bytes(len(bin_code)+1+info)
+                    bin_code[byte:byte+6]=bytes(Pointer(len(bin_code)+1+info))
                 except Exception as _:
                     try:
                         print(f"Failed to create Ram pointer, near line {line_to_path.index(byte)}")
@@ -132,7 +122,7 @@ def assembly_to_bin(assembly_code):
                         exit(8)
             elif todo == "line pointer":
                 try:
-                    bin_code[byte:byte+5]=pointer_to_bytes(line_to_path[info])
+                    bin_code[byte:byte+5]=bytes(Pointer(line_to_path[info]))
                 except KeyError():
                     print(f'Could not find line {info}')
                     exit(6)
