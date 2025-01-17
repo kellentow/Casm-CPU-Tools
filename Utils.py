@@ -67,56 +67,75 @@ class Pointer():
     def __lt__(self,other):
         if type(other) is int:
             return int(self) < other
+        elif type(other) is Pointer:
+            return self.value < other.value
         else:
             return self < other
         
     def __le__(self,other):
         if type(other) is int:
             return int(self) <= other
+        elif type(other) is Pointer:
+            return self.value <= other.value
         else:
             return self <= other
         
     def __gt__(self,other):
         if type(other) is int:
             return int(self) > other
+        elif type(other) is Pointer:
+            return self.value > other.value
         else:
             return self > other
         
     def __ge__(self,other):
         if type(other) is int:
             return int(self) >= other
+        elif type(other) is Pointer:
+            return self.value >= other.value
         else:
             return self >= other
             
     def __eq__(self,other):
         if type(other) is int:
             return int(self) == other
+        elif type(other) is Pointer:
+            return self.value == other.value
         else:
             return self == other
-            
     
     def __add__(self,other):
         if type(other) is int:
             return self.value + other
+        elif type(other) is Pointer:
+            return self.__init__(self.value + other.value)
         else:
             raise TypeError(f"Couldn't add Pointer and {type(other)}")
     def __sub__(self,other):
         if type(other) is int:
             return self.value - other
+        elif type(other) is Pointer:
+            return self.__init__(self.value - other.value)
         else:
             raise TypeError(f"Couldn't sub Pointer and {type(other)}")
     def __mul__(self,other):
         if type(other) is int:
             return self.value * other
+        elif type(other) is Pointer:
+            return self.__init__(self.value * other.value)
         else:
             raise TypeError(f"Couldn't mult Pointer and {type(other)}")
     def __div__(self,other):
         if type(other) is int:
             return self.value / other
+        elif type(other) is Pointer:
+            return self.__init__(self.value / other.value)
         else:
             raise TypeError(f"Couldn't div Pointer and {type(other)}")
     def __mod__(self,other):
         if type(other) is int:
             return self.value % other
+        elif type(other) is Pointer:
+            return self.__init__(self.value % other.value)
         else:
             raise TypeError(f"Couldn't mod Pointer and {type(other)}")

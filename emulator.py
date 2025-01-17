@@ -16,8 +16,6 @@ def byte_to_reg_ids(byte):
     c = (byte >> 2) & 0b11
     d = byte & 0b11
     return [a,b,c,d]
-def bytes_to_pointer(bytes):
-    return int.from_bytes(bytes,'big')
 
 pc = Pointer(0)
 input_mode = 0 #pointers become constants, 0=pointers, 1=constants
@@ -34,11 +32,11 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
             data[data[-256] * -5 + 3] = int(pc / 64**3) % 255
             data[data[-256] * -5 + 4] = int(pc / 64**4) % 255
             data[-256] = (data[-256] + 1) % 64
-            pc = bytes_to_pointer(data[pc + 1:pc + 6])
+            pc = Pointer(data[pc + 1:pc + 6])
             print(f"Jumping to: {pc}")
         case 1:   #/x01  |  return
             data[-256] = (data[-256]-1) %64
-            pc = bytes_to_pointer(reversed(data[data[-256] * -5:data[-256] * -5 + 4]))
+            pc = Pointer(reversed(data[data[-256] * -5:data[-256] * -5 + 4]))
             print(f"Returning to: {pc}")
             data[data[-256] * -5 + 0] = 0
             data[data[-256] * -5 + 1] = 0
@@ -50,7 +48,7 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
             exit()
         case 3:   #/x03  |  read to reg
             if input_mode == 0:
-                inp = data[bytes_to_pointer(data[pc+2:pc+8])]
+                inp = data[Pointer(data[pc+2:pc+8])]
                 t = 8
             else:
                 inp = data[pc+2]
@@ -65,18 +63,18 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
                 inp = reg[a]
             else:
                 inp = data[pc+1]
-            p = bytes_to_pointer(data[pc+2:pc+8])
+            p = Pointer(data[pc+2:pc+8])
             data[p] = data[a]
             print(f"reg {a} -> {data[a]}")
             pc += 8
         case 5:   #/x05  |  is data[pc+1:pc+4] == data[pc+5]
             if input_mode == 0:
-                inp = bytes_to_pointer(data[pc+7:pc+13])
+                inp = Pointer(data[pc+7:pc+13])
                 t = 13
             else:
                 inp = data[pc+7]
                 t = 8
-            p1 = bytes_to_pointer(data[pc+1:pc+7])
+            p1 = Pointer(data[pc+1:pc+7])
             if data[p1] == inp:
                 pc += t
                 print(f"{p1} == {inp}")
@@ -84,7 +82,7 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
                 pc+=t+1
                 print(f"{p1} != {inp}")
         case 6:   #/x06  |  is data[pc+1:pc+4] == 0
-            p1 = bytes_to_pointer(data[pc+1:pc+7])
+            p1 = Pointer(data[pc+1:pc+7])
             if data[p1] == 0:
                 pc += 7
                 print(f"{p1} == 0")
@@ -113,61 +111,61 @@ while pc < (len(rom[0:2**14])+2**12): #max len of 16kib for rom + 16kib for ram
             print("nop")
             pc+=1
         case 16:  #/x10  |  l bitshift
-            p1 = bytes_to_pointer(data[pc+1:pc+7])
+            p1 = Pointer(data[pc+1:pc+7])
             a,b,c,d = byte_to_reg_ids(data[pc+7])
             reg[a] = int(data[p1]<<1)%256
             print(f"{data[p1]} << 1 -> reg {a}")
             pc += 8
         case 17:  #/x11  |  r bitshift
-            p1 = bytes_to_pointer(data[pc+1:pc+7])
+            p1 = Pointer(data[pc+1:pc+7])
             a,b,c,d = byte_to_reg_ids(data[pc+7])
             reg[a] = int(data[p1]>>1)%256
             print(f"{data[p1]} >> 1 -> reg {a}")
             pc += 8
         case 18:  #/x12  |  add
             if input_mode == 0:
-                inp = data[bytes_to_pointer(data[pc+8:pc+14])]
+                inp = data[Pointer(data[pc+8:pc+14])]
                 t = 13
             else:
                 inp = data[pc+8]
                 t = 8
-            p1 = bytes_to_pointer(data[pc+2:pc+8])
+            p1 = Pointer(data[pc+2:pc+8])
             a,b,c,d = byte_to_reg_ids(data[pc+1])
             reg[a] = int(data[p1]+inp)%255
             print(f"{data[p1]} + {inp} -> reg {a}")
             pc += t
         case 19:  #/x13  |  sub
             if input_mode == 0:
-                inp = data[bytes_to_pointer(data[pc+8:pc+14])]
+                inp = data[Pointer(data[pc+8:pc+14])]
                 t = 13
             else:
                 inp = data[pc+8]
                 t = 8
-            p1 = bytes_to_pointer(data[pc+2:pc+8])
+            p1 = Pointer(data[pc+2:pc+8])
             a,b,c,d = byte_to_reg_ids(data[pc+1])
             reg[a] = int(data[p1]-inp)%255
             print(f"{data[p1]} - {inp} -> reg {a}")
             pc += t
         case 20:  #/x14  |  mult
             if input_mode == 0:
-                inp = data[bytes_to_pointer(data[pc+8:pc+14])]
+                inp = data[Pointer(data[pc+8:pc+14])]
                 t = 13
             else:
                 inp = data[pc+8]
                 t = 8
-            p1 = bytes_to_pointer(data[pc+2:pc+8])
+            p1 = Pointer(data[pc+2:pc+8])
             a,b,c,d = byte_to_reg_ids(data[pc+1])
             reg[a] = int(data[p1]*inp)%255
             print(f"{data[p1]} * {inp} -> reg {a}")
             pc += t
         case 21:  #/x15  |  div
             if input_mode == 0:
-                inp = data[bytes_to_pointer(data[pc+8:pc+14])]
+                inp = data[Pointer(data[pc+8:pc+14])]
                 t = 13
             else:
                 inp = data[pc+8]
                 t = 8
-            p1 = bytes_to_pointer(data[pc+2:pc+8])
+            p1 = Pointer(data[pc+2:pc+8])
             a,b,c,d = byte_to_reg_ids(data[pc+1])
             reg[a] = int(data[p1]/inp)%255
             print(f"{data[p1]} / {inp} -> reg {a}")
