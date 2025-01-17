@@ -55,7 +55,7 @@ Casm is designed to provide a simple yet powerful assembly language for custom C
     <td><a href="./instructions.md#is_zero">P==0?</a></td>
     <td><a href="./instructions.md#reg_equals">R==R</a></td>
     <td><a href="./instructions.md#req_zero">P==0?</a></td>
-    <td><a href="./instructions.md#???">Nop</a></td>
+    <td><a href="./instructions.md#nop">Nop</a></td>
     <td><a href="./instructions.md">None</a></td>
     <td><a href="./instructions.md">None</a></td>
     <td><a href="./instructions.md">None</a></td>
