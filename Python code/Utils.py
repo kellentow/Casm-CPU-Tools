@@ -56,7 +56,7 @@ class Pointer():
         return self.value
     
     def __bytes__(self):
-        return int.to_bytes(self.value,'big')
+        return int.to_bytes(self.value,5,'big')
     
     def __iter__(self):
         return iter(bytes(self))

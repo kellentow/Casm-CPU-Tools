@@ -3,34 +3,34 @@ from Utils import set_proc_name, Pointer
 
 set_proc_name('Casm Compiler')
 
-def assembly_to_bin(assembly_code):
-    # Define the opcode mapping for your assembly instructions.
-    opcode_map = {
-        "jump":             [0x00,'p'],
-        "return":           [0x01],
-        "exit":             [0x02],
-        "read":             [0x03,'r','p,c'],
-        "write":            [0x04,'r,c','p'],
-        "compare":          [0x05,'r','p,c'],
-        "is_zero":          [0x06,'p'],
-        "reg_equals":       [0x07,'r','r,c'],
-        "reg_zero":         [0x08,'r'],
-        "nop":              [0x09],
-        "shift_left":       [0x10,'p','r'],
-        "shift_right":      [0x11,'p','r'],
-        "add":              [0x12,'r','p','p,c'],
-        "sub":              [0x13,'r','p','p,c'],
-        "mul":              [0x14,'r','p','p,c'],
-        "div":              [0x15,'r','p','p,c'],
-        "add1":             [0x16],
-        "shift_left_reg":   [0x1A,'r','r'],
-        "shift_right_reg":  [0x1B,'r','r'],
-        "add_reg":          [0x1C,'r','r','r'],
-        "sub_reg":          [0x1D,'r','r','r'],
-        "mul_reg":          [0x1E,'r','r','r'],
-        "div_reg":          [0x1F,'r','r','r']
-    }
+# Define the opcode mapping for your assembly instructions.
+opcode_map = {
+    "jump":             [0x00,'p'],
+    "return":           [0x01],
+    "exit":             [0x02],
+    "read":             [0x03,'r','p,c'],
+    "write":            [0x04,'r,c','p'],
+    "compare":          [0x05,'r','p,c'],
+    "is_zero":          [0x06,'p'],
+    "reg_equals":       [0x07,'r','r,c'],
+    "reg_zero":         [0x08,'r'],
+    "nop":              [0x09],
+    "shift_left":       [0x10,'p','r'],
+    "shift_right":      [0x11,'p','r'],
+    "add":              [0x12,'r','p','p,c'],
+    "sub":              [0x13,'r','p','p,c'],
+    "mul":              [0x14,'r','p','p,c'],
+    "div":              [0x15,'r','p','p,c'],
+    "add1":             [0x16],
+    "shift_left_reg":   [0x1A,'r','r'],
+    "shift_right_reg":  [0x1B,'r','r'],
+    "add_reg":          [0x1C,'r','r','r'],
+    "sub_reg":          [0x1D,'r','r','r'],
+    "mul_reg":          [0x1E,'r','r','r'],
+    "div_reg":          [0x1F,'r','r','r']
+}
 
+def assembly_to_bin(assembly_code,verbose=True):
     funcs = {}
     line_to_path=[]
     final = []
@@ -40,8 +40,8 @@ def assembly_to_bin(assembly_code):
         return [(value >> (8 * i)) & 0xFF for i in range(num_bytes)]
     
     bin_code = []
-
-    print("Reading code")
+    if verbose:
+        print("Reading code")
     # Parse the assembly code and convert each instruction to machine code.
     for i, line in enumerate(assembly_code.splitlines()):
         line = line.strip()
@@ -83,7 +83,8 @@ def assembly_to_bin(assembly_code):
         instruction_bytes = int_to_bytes(opcode)
 
         # Handle operands (registers, pointers, immediate values)
-        for i, operand in enumerate(operands):
+        for i in range(len(opcode_map[instruction][1:])):
+            operand = operands[i]
             if operand.startswith(';'):
                 break 
             elif any(element in operand for element in opcode_map[instruction][i+1].split(',')):
@@ -106,7 +107,8 @@ def assembly_to_bin(assembly_code):
         # Add this instruction to the binary code
         bin_code.extend(instruction_bytes)
 
-    print("Doing last look over")
+    if verbose:
+        print("Doing last look over")
 
     try:
         for byte, info, todo in final:
@@ -140,7 +142,8 @@ def assembly_to_bin(assembly_code):
             print(r)
             exit(9)
 
-    print("Binary Generated")
+    if verbose:
+        print("Binary Generated")
 
     return bin_code
 
@@ -149,12 +152,14 @@ def save_bin_to_file(bin_code, filename):
         f.write(bytes(bin_code))
     print(f"Binary saved to {filename}")
 
-try:
-    open(sys.argv[1], 'r').close()
-except Exception as _:
-    print("Failed to read file, file may not exist or you don't have permission to read it")
-    exit(10)
 
-# Convert the assembly code to binary and save to file
-bin_code = assembly_to_bin(open(sys.argv[1], 'r').read())
-save_bin_to_file(bin_code, "".join(sys.argv[1].split('.')[:-1]) + ".bin")
+if __file__ == "__main__":
+    try:
+        open(sys.argv[1], 'r').close()
+    except Exception as _:
+        print("Failed to read file, file may not exist or you don't have permission to read it")
+        exit(10)
+
+    # Convert the assembly code to binary and save to file
+    bin_code = assembly_to_bin(open(sys.argv[1], 'r').read())
+    save_bin_to_file(bin_code, "".join(sys.argv[1].split('.')[:-1]) + ".bin")

@@ -1,0 +1,2 @@
+#/bin/bash
+python3 './Python code/compiler.py' $1
