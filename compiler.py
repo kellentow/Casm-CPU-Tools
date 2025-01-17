@@ -123,15 +123,14 @@ def assembly_to_bin(assembly_code):
             if todo == "ram pointer":
                 try:
                     bin_code[byte:byte+6]=pointer_to_bytes(len(bin_code)+1+info)
-                except Exception as e:
+                except Exception as _:
                     try:
                         print(f"Failed to create Ram pointer, near line {line_to_path.index(byte)}")
                         exit(7)
                     except ValueError:
-                        print(f"Failed to create Ram pointer, Could not get line number")
+                        print("Failed to create Ram pointer, Could not get line number")
                         exit(8)
             elif todo == "line pointer":
-                print(info,line_to_path[info])
                 try:
                     bin_code[byte:byte+5]=pointer_to_bytes(line_to_path[info])
                 except KeyError():
@@ -158,11 +157,11 @@ def assembly_to_bin(assembly_code):
 def save_bin_to_file(bin_code, filename):
     with open(filename, "wb") as f:
         f.write(bytes(bin_code))
-    print(f"Binary code saved to {filename}")
+    print(f"Binary saved to {filename}")
 
 try:
     open(sys.argv[1], 'r').close()
-except Exception as e:
+except Exception as _:
     print("Failed to read file, file may not exist or you don't have permission to read it")
     exit(10)
 

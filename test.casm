@@ -1,8 +1,0 @@
-; Function to perform an action
-jump pl5
-def performAction
-    return               ; Return from the function
-
-; Main program
-run performAction        ; Call the performAction function
-exit                     ; Exit the program
