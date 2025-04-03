@@ -1,7 +1,7 @@
 import sys
 from Utils import set_proc_name, Pointer
 
-set_proc_name('Casm Compiler')
+set_proc_name('Casm_C')
 
 # Define the opcode mapping for your assembly instructions.
 opcode_map = {

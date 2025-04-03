@@ -5,7 +5,7 @@ def set_proc_name(newname):
     buff.value = bytes(newname, "UTF-8")
     libc.prctl(15, byref(buff), 0, 0, 0)
 
-class Pointer():
+class Pointer:
     def __init__(self,data:int | bytes):
         if type(data) is int:
             self.value = data % (256**5)
@@ -139,3 +139,47 @@ class Pointer():
             return self.__init__(self.value % other.value)
         else:
             raise TypeError(f"Couldn't mod Pointer and {type(other)}")
+        
+class Storage:
+    def __init__(self,size:int):
+        self.size = size
+        self.data = bytearray(size)
+    def __getitem__(self,index):
+        return self.data[index]
+    def __setitem__(self,index,value):
+        self.data[index] = value
+    def __len__(self):
+        return self.size
+    def __iter__(self):
+        return iter(self.data)
+    def __bytes__(self):
+        return bytes(self.data)
+    def __repr__(self):
+        return f"Storage({self.size})"
+    def __str__(self):
+        return f"Storage({self.size})"
+    def __int__(self):
+        return int.from_bytes(self.data,'big')
+    def __index__(self):
+        return int(self)
+    
+class Ram(Storage):
+    def __init__(self,size:int):
+        '''
+        Ram(size)
+        size: int - size of the ram in Kibibytes (bytes/1024)
+
+        Helper class for storing data in ram
+        '''
+        super().__init__(size*(2**10))
+    def __repr__(self):
+        return f"Ram({self.size*(2**-10)}KiB)"
+    def __str__(self):
+        return f"Ram({self.size*(2**-10)}KiB)"
+    
+def byte_to_reg_ids(byte):
+    a = (byte >> 6) & 0b11
+    b = (byte >> 4) & 0b11
+    c = (byte >> 2) & 0b11
+    d = byte & 0b11
+    return [a,b,c,d]

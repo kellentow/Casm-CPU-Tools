@@ -1,5 +1,8 @@
 import unittest
 import compiler
+from Utils import set_proc_name
+
+set_proc_name("Casm_T")
 
 class TestCompiler(unittest.TestCase):
     def test_all_opcodes(self):
